@@ -48,8 +48,8 @@ public class PickLocationActivity extends AppCompatActivity implements  Response
     private PlacePredictions predictions;
     private Location mLastLocation;
     private AutoCompleteAdapter mAutoCompleteAdapter;
-    private int CUSTOM_AUTOCOMPLETE_REQUEST_CODE = 2000;
-    private static final int MY_PERMISSIONS_REQUEST_LOC = 3000;
+    private int CUSTOM_AUTOCOMPLETE_REQUEST_CODE = 20;
+    private static final int MY_PERMISSIONS_REQUEST_LOC = 30;
     private ImageView searchBtn;
     private FragmentManager fragmentManager;
     private String preFilledText;
@@ -127,15 +127,20 @@ public class PickLocationActivity extends AppCompatActivity implements  Response
                             // cancel all the previous requests in the queue to optimise your network calls during autocomplete search
                             MyApplication.volleyQueueInstance.cancelRequestInQueue(GETPLACESHIT);
 
-                            request = new VolleyJSONRequest(Request.Method.GET, getDirectionsUrl(Address.getText().toString()), null, null, PickLocationActivity.this, PickLocationActivity.this);
+                            //build Get url of Place Autocomplete and hit the url to fetch result.
+                            request = new VolleyJSONRequest(Request.Method.GET, getPlaceAutoCompleteUrl(Address.getText().toString()), null, null, PickLocationActivity.this, PickLocationActivity.this);
+
+                            //Give a tag to your request so that you can use this tag to cancle request later.
                             request.setTag(GETPLACESHIT);
+
                             MyApplication.volleyQueueInstance.addToRequestQueue(request);
 
                         }
 
                     };
 
-                    //only canceling the network calls will not help, you need to remove all callbacks as well
+                    // only canceling the network calls will not help, you need to remove all callbacks as well
+                    // otherwise the pending callbacks and messages will again invoke the handler and will send the request
                     if (handler != null) {
                         handler.removeCallbacksAndMessages(null);
                     } else {
@@ -169,7 +174,15 @@ public class PickLocationActivity extends AppCompatActivity implements  Response
 
     }
 
-    public String getDirectionsUrl(String input) {
+    /*
+        * Create a get url to fetch results from google place autocomplete api.
+        * Append the input received from autocomplete edittext
+        * Append your current location
+        * Append radius you want to search results within
+        * Choose a language you want to fetch data in
+        * Append your google API Browser key
+     */
+    public String getPlaceAutoCompleteUrl(String input) {
         StringBuilder urlString = new StringBuilder();
         urlString.append("https://maps.googleapis.com/maps/api/place/autocomplete/json");
         urlString.append("?input=");
@@ -179,9 +192,11 @@ public class PickLocationActivity extends AppCompatActivity implements  Response
             e.printStackTrace();
         }
         urlString.append("&location=");
-        urlString.append(latitude + "," + longitude); // this is nessary to show nearby results.
+        urlString.append(latitude + "," + longitude); // append lat long of current location to show nearby results.
         urlString.append("&radius=500&language=en");
-        urlString.append("&key=" + "YOUR_GOOGLE_PROJECT_ANDROID_KEY HERE");
+        urlString.append("&key=" + "YOUR_GOOGLE_PROJECT_BROWSER_KEY_HERE");
+
+        Log.d("FINAL URL:::   ", urlString.toString());
         return urlString.toString();
     }
 

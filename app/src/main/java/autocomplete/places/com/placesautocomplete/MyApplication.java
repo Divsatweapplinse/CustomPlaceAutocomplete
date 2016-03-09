@@ -17,7 +17,7 @@ import autocomplete.places.com.placesautocomplete.utils.VolleySingleton;
 
 
 /**
- * Created by dhruv on 30/10/15.
+ * Created by mansha on 30/10/15.
  */
 public class MyApplication extends MultiDexApplication {
 
